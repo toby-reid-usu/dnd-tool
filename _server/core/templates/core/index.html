@@ -24,8 +24,8 @@
         <p>Welcome to the campaign manager!</p>
         <p>Here you can create, edit, and delete campaigns.</p>
     </div>
-    {% if campaigns %}
-        {% for campaign in campaigns %}
+    {% if public_campaigns %}
+        {% for campaign in public_campaigns %}
             <div class="info-card campaign-card">
                 <h3>{{campaign.name}}</h3>
                 <p>{{campaign.description}}</p>
