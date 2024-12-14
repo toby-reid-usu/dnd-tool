@@ -24,11 +24,11 @@
         </label>
         <label>
             Race
-            <input type="text" name="race" id="character-race" value="{{current_character.race}}" />
+            <input type="text" name="race" id="character-race" {% if current_character.race %}value="{{current_character.race}}"{% endif %} />
         </label>
         <label>
             Class
-            <input type="text" name="clazz" id="character-class" value="{{current_character.clazz}}" />
+            <input type="text" name="clazz" id="character-class" {% if current_character.clazz %}value="{{current_character.clazz}}"{% endif %} />
         </label>
         <label>
             Level
