@@ -108,13 +108,6 @@
                     {% if character.location %}
                         <p>From {{character.location.name}}</p>
                     {% endif %}
-                    {% if character.organizations %}
-                        <p>Member of:<br>
-                            {% for organization in character.organizations %}
-                                {{organization.name}}<br>
-                            {% endfor %}
-                        </p>
-                    {% endif %}
                     <p>{{character.description}}</p>
                     <a href="characters/{{character.id}}/">View</a>
                 </div>

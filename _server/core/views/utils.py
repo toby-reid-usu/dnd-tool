@@ -91,6 +91,13 @@ def campaign_form(req: HttpRequest, campaign: Campaign | None=None) -> HttpRespo
     description = req.POST.get("description")
     is_public = req.POST.get("is_public") == "on"
     approved_users = req.POST.getlist("approved_users")
+    if approved_users:
+        try:
+            approved_users = [int(user) for user in approved_users]
+            approved_users = [User.objects.get(id=user) for user in approved_users]
+        except ValueError or User.DoesNotExist:
+            return HttpResponseBadRequest("Invalid user")
+
     if campaign:
         campaign.name = name
         campaign.description = description
@@ -114,7 +121,7 @@ def location_form(req: HttpRequest, campaign: Campaign, location: Location | Non
     if hostility not in dict(HOSTILITY).keys():
         return HttpResponseBadRequest("Invalid hostility level")
 
-    location_ids = req.POST.getlist("locations")
+    location_ids = req.POST.getlist("neighboring_locations")
     neighboring_locations: list[Location] = []
     if location_ids:
         try:
@@ -147,7 +154,7 @@ def character_form(req: HttpRequest, campaign: Campaign, character: Character | 
         return HttpResponseBadRequest("Missing character name")
     race = req.POST.get("race")
     race = race if race else Character.race.default
-    clazz = req.POST.get("class")
+    clazz = req.POST.get("clazz")
     level = req.POST.get("level")
     try:
         level = int(level) if level else Character.level.default
@@ -155,7 +162,7 @@ def character_form(req: HttpRequest, campaign: Campaign, character: Character | 
         return HttpResponseBadRequest("Invalid level: must be an integer")
     description = req.POST.get("description")
 
-    location_id = req.POST.get("location")
+    location_id = req.POST.get("from_location")
     location_opt = None
     if location_id:
         try:
@@ -179,7 +186,7 @@ def character_form(req: HttpRequest, campaign: Campaign, character: Character | 
                 return organization_opt
             organizations.append(organization_opt)
 
-    character_ids = req.POST.getlist("characters")
+    character_ids = req.POST.getlist("related_characters")
     characters: list[Character] = []
     if character_ids:
         try:
@@ -192,7 +199,7 @@ def character_form(req: HttpRequest, campaign: Campaign, character: Character | 
                 return character_opt
             characters.append(character_opt)
 
-    if character:
+    if character is not None:
         character.name = name
         character.race = race
         character.clazz = clazz
@@ -232,6 +239,7 @@ def character_form(req: HttpRequest, campaign: Campaign, character: Character | 
             character = PlayerCharacter(campaign=campaign, name=name, race=race, clazz=clazz,
                                         level=level, from_location=location_opt,
                                         description=description, player=pc_opt)
+            character.save()  # must be saved before we can set related characters & orgs
         else:  # NPC
             hostility = req.POST.get("hostility")
             if hostility not in dict(HOSTILITY).keys():
@@ -273,7 +281,7 @@ def event_form(req: HttpRequest, campaign: Campaign, event: Event | None=None) -
         if isinstance(location_opt, HttpResponse):
             return location_opt
 
-    organization_ids = req.POST.getlist("organizations")
+    organization_ids = req.POST.getlist("involved_organizations")
     organizations: list[Organization] = []
     if organization_ids:
         try:
@@ -286,7 +294,7 @@ def event_form(req: HttpRequest, campaign: Campaign, event: Event | None=None) -
                 return organization_opt
             organizations.append(organization_opt)
 
-    character_ids = req.POST.getlist("characters")
+    character_ids = req.POST.getlist("involved_characters")
     characters: list[Character] = []
     if character_ids:
         try:
@@ -331,7 +339,7 @@ def note_form(req: HttpRequest, campaign: Campaign, note: Note | None=None) -> H
     
     race = req.POST.get("race")
     race = race if race else None  # prevents empty field
-    clazz = req.POST.get("class")
+    clazz = req.POST.get("clazz")
     clazz = clazz if clazz else None  # prevents empty field
     if clazz:
         if clazz not in dict(CLASSES).keys():
@@ -344,7 +352,7 @@ def note_form(req: HttpRequest, campaign: Campaign, note: Note | None=None) -> H
     
     hostility = req.POST.get("hostility")
     hostility = hostility if hostility else None  # prevents empty field
-    if hostility:
+    if hostility is not None:
         if hostility not in dict(HOSTILITY).keys():
             return HttpResponseBadRequest("Invalid hostility level")
         

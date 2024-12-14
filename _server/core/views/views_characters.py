@@ -70,7 +70,7 @@ def characters_id(req: HttpRequest, campaign_id: int, character_id: int) -> Http
         RELATED_CHARACTERS: character_opt.related_characters.all(),
         CHARACTER_ORGANIZATIONS: character_opt.organizations.all(),
         EVENTS: Event.objects.filter(involved_characters=character_opt),
-        NOTES: Note.objects.filter(involved_characters=character_opt),
+        NOTES: Note.objects.filter(characters=character_opt),
     }
     return render(req, "campaigns/characters/character.html", context)
 

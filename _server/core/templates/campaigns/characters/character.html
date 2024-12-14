@@ -41,7 +41,13 @@
     {% endif %}
     <div class="info-card">
         <h3>From Location</h3>
-        <p>{{current_character.from_location.name if current_character.from_location else "Unknown"}}</p>
+        <p>
+            {% if current_character.from_location %}
+                <a href="/campaigns/{{current_campaign.id}}/locations/{{current_character.from_location.id}}/">{{current_character.from_location.name}}</a>
+            {% else %}
+                None
+            {% endif %}
+        </p>
     </div>
     <div class="info-card">
         <h3>Organization</h3>
