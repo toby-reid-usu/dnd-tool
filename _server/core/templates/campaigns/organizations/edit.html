@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Campaign Manager - Home</title>
     <link rel="stylesheet" href="/static/{{css_file}}" />
-    <script type="module" src="/static/{{js_file}}"></script>
 </head>
 <body>
     <div id="header">
@@ -32,15 +31,16 @@
             </select>
         </label>
         <label>
-            Neighboring Locations
+            Location
             {% if locations %}
                 <select name="location" id="organization-location">
+                    <option value=""></option>
                     {% for location in locations %}
                         <option value="{{location.id}}" {% if current_organization.location == location %}selected{% endif %}>{{location.name}}</option>
                     {% endfor %}
                 </select>
             {% else %}
-                <em>No other locations have been added to this campaign.</em>
+                <em>No locations have been added to this campaign.</em>
             {% endif %}
         </label>
         <label>

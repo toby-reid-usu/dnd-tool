@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Campaign Manager - Home</title>
     <link rel="stylesheet" href="/static/{{css_file}}" />
-    <script type="module" src="/static/{{js_file}}"></script>
 </head>
 <body>
     <div id="header">
@@ -39,6 +38,7 @@
             From Location
             {% if locations %}
                 <select name="from_location" id="character-from-location">
+                    <option value=""></option>
                     {% for location in locations %}
                         <option value="{{location.id}}">{{location.name}}</option>
                     {% endfor %}

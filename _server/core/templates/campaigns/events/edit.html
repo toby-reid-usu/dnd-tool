@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Campaign Manager - Home</title>
     <link rel="stylesheet" href="/static/{{css_file}}" />
-    <script type="module" src="/static/{{js_file}}"></script>
 </head>
 <body>
     <div id="header">
@@ -35,6 +34,7 @@
             Location
             {% if locations %}
                 <select name="location" id="event-location">
+                    <option value=""></option>
                     {% for location in locations %}
                         <option value="{{location.id}}" {% if current_event.location == location %}selected{% endif %}>{{location.name}}</option>
                     {% endfor %}
@@ -45,8 +45,8 @@
         </label>
         <label>
             Involved Organizations
-            {% if organizations %}
                 <select name="involved_organizations" id="event-organizations" multiple>
+                    <option value=""></option>
                     {% for organization in organizations %}
                         <option value="{{organization.id}}" {% if organization in involved_organizations %}selected{% endif %}>{{organization.name}}</option>
                     {% endfor %}
