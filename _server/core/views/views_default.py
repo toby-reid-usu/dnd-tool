@@ -9,7 +9,13 @@ from .utils import *
 
 # / Welcome page
 def index(req: HttpRequest) -> HttpResponse:
-    return render(req, "core/index.html", {ASSET: ASSET_URL, CSS: CSS_FILE, CURRENT_USER: req.user})
+    context = {
+        ASSET: ASSET_URL,
+        CSS: CSS_FILE,
+        CURRENT_USER: req.user,
+        CAMPAIGNS: Campaign.objects.filter(is_public=True),
+    }
+    return render(req, "core/index.html", context)
 
 
 # /campaigns/
