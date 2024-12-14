@@ -31,9 +31,10 @@
             </select>
         </label>
         <label>
-            Neighboring Locations
+            Location
             {% if locations %}
                 <select name="location" id="organization-location">
+                    <option value=""></option>
                     {% for location in locations %}
                         <option value="{{location.id}}">{{location.name}}</option>
                     {% endfor %}

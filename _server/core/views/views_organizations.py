@@ -43,44 +43,8 @@ def organizations_new(req: HttpRequest, campaign_id: int) -> HttpResponse:
             ORGANIZATIONS: Organization.objects.filter(campaign=campaign_opt),
         }
         return render(req, "campaigns/organizations/new.html", context)
-
     # else it's POST, and it's a new organization request
-    name = req.POST.get("name")
-    if not name:
-        return HttpResponseBadRequest("Missing organization name")
-    description = req.POST.get("description")
-
-    hostility = req.POST.get("hostility")
-    if hostility not in dict(HOSTILITY).keys():
-        return HttpResponseBadRequest("Invalid hostility level")
-
-    try:
-        location_id = int(req.POST.get("location"))
-    except ValueError:
-        return HttpResponseBadRequest("Invalid location")
-    location_opt = get_campaign_field_opt(Location, location_id, campaign_opt)
-    if isinstance(location_opt, HttpResponse):
-        return location_opt
-
-    organization_ids = req.POST.getlist("organizations")
-    associated_organizations: list[Organization] = []
-    if organization_ids:
-        try:
-            organization_ids = [int(organization) for organization in organization_ids]
-        except ValueError:
-            return HttpResponseBadRequest("Invalid associated organization")
-        for organization_id in organization_ids:
-            organization_opt = get_campaign_field_opt(Organization, organization_id, campaign_opt)
-            if isinstance(organization_opt, HttpResponse):
-                return organization_opt
-            associated_organizations.append(organization_opt)
-
-
-    organization = Organization(campaign=campaign_opt, name=name, location=location_opt,
-                                related_organizations=associated_organizations,
-                                description=description, hostility=hostility)
-    organization.save()
-    return redirect(f"/campaigns/{campaign_id}/organizations/{organization.id}/")
+    return organization_form(req, campaign_opt)
 
 
 # /campaigns/<int:campaign_id>/organizations/<int:organization_id>/
@@ -100,9 +64,9 @@ def organizations_id(req: HttpRequest, campaign_id: int, organization_id: int) -
         CURRENT_CAMPAIGN: campaign_opt,
         CURRENT_ORGANIZATION: organization_opt,
         RELATED_ORGANIZATIONS: organization_opt.related_organizations.all(),
-        CHARACTERS: Character.objects.filter(organization=organization_opt),
-        EVENTS: Event.objects.filter(organization=organization_opt),
-        NOTES: Note.objects.filter(organization=organization_opt),
+        CHARACTERS: Character.objects.filter(organizations=organization_opt),
+        EVENTS: Event.objects.filter(involved_organizations=organization_opt),
+        NOTES: Note.objects.filter(organizations=organization_opt),
     }
     return render(req, "campaigns/organizations/organization.html", context)
 
@@ -130,45 +94,8 @@ def organizations_edit(req: HttpRequest, campaign_id: int, organization_id: int)
                                                .exclude(id=organization_opt.id),
         }
         return render(req, "campaigns/organizations/edit.html", context)
-
     # else it's POST, and it's an edit organization request
-    name = req.POST.get("name")
-    if not name:
-        return HttpResponseBadRequest("Missing organization name")
-    description = req.POST.get("description")
-
-    hostility = req.POST.get("hostility")
-    if hostility not in dict(HOSTILITY).keys():
-        return HttpResponseBadRequest("Invalid hostility level")
-
-    try:
-        location_id = int(req.POST.get("location"))
-    except ValueError:
-        return HttpResponseBadRequest("Invalid location")
-    location_opt = get_campaign_field_opt(Location, location_id, campaign_opt)
-    if isinstance(location_opt, HttpResponse):
-        return location_opt
-
-    organization_ids = req.POST.getlist("organizations")
-    associated_organizations: list[Organization] = []
-    if organization_ids:
-        try:
-            organization_ids = [int(organization) for organization in organization_ids]
-        except ValueError:
-            return HttpResponseBadRequest("Invalid associated organization")
-        for organization_id in organization_ids:
-            organization_opt = get_campaign_field_opt(Organization, organization_id, campaign_opt)
-            if isinstance(organization_opt, HttpResponse):
-                return organization_opt
-            associated_organizations.append(organization_opt)
-
-    organization_opt.name = name
-    organization_opt.location = location_opt
-    organization_opt.related_organizations = associated_organizations
-    organization_opt.description = description
-    organization_opt.hostility = hostility
-    organization_opt.save()
-    return redirect(f"/campaigns/{campaign_id}/organizations/{organization_id}/")
+    return organization_form(req, campaign_opt, organization_opt)
 
 
 # /campaigns/<int:campaign_id>/organizations/<int:organization_id>/delete/

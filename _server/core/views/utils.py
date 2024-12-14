@@ -147,6 +147,55 @@ def location_form(req: HttpRequest, campaign: Campaign, location: Location | Non
     return redirect(f"/campaigns/{campaign.id}/locations/{location.id}/")
 
 
+def organization_form(req: HttpRequest, campaign: Campaign,
+                      organization: Organization | None=None) -> HttpResponse:
+    name = req.POST.get("name")
+    if not name:
+        return HttpResponseBadRequest("Missing organization name")
+    description = req.POST.get("description")
+
+    hostility = req.POST.get("hostility")
+    if hostility not in dict(HOSTILITY).keys():
+        return HttpResponseBadRequest("Invalid hostility level")
+    
+    location_id = req.POST.get("location")
+    location_opt = None
+    if location_id:
+        try:
+            location_id = int(location_id)
+        except ValueError:
+            return HttpResponseBadRequest("Invalid location")
+        location_opt = get_campaign_field_opt(Location, location_id, campaign)
+        if isinstance(location_opt, HttpResponse):
+            return location_opt
+
+    organization_ids = req.POST.getlist("organizations")
+    related_organizations: list[Organization] = []
+    if organization_ids:
+        try:
+            organization_ids = [int(organization) for organization in organization_ids]
+        except ValueError:
+            return HttpResponseBadRequest("Invalid organization")
+        for organization_id in organization_ids:
+            organization_opt = get_campaign_field_opt(Organization, organization_id, campaign)
+            if isinstance(organization_opt, HttpResponse):
+                return organization_opt
+            related_organizations.append(organization_opt)
+
+    if organization:
+        organization.name = name
+        organization.description = description
+        organization.hostility = hostility
+        organization.location = location_opt
+    else:
+        organization = Organization(campaign=campaign, name=name, description=description,
+                                    hostility=hostility, location=location_opt)
+        organization.save()
+    organization.related_organizations.set(related_organizations)
+    organization.save()
+    return redirect(f"/campaigns/{campaign.id}/organizations/{organization.id}/")
+
+
 def character_form(req: HttpRequest, campaign: Campaign, character: Character | None=None) \
                    -> HttpResponse:
     name = req.POST.get("name")
