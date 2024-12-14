@@ -127,7 +127,7 @@ def notes_convert(req: HttpRequest, campaign_id: int, note_id: int) -> HttpRespo
         return note_opt
 
     if req.method == "GET":
-        conversion_types = get_conversion_types(note_opt)
+        conversion_types = [type.__name__ for type in get_conversion_types(note_opt)]
         context = {
             ASSET: ASSET_URL,
             CSS: CSS_FILE,
@@ -138,4 +138,4 @@ def notes_convert(req: HttpRequest, campaign_id: int, note_id: int) -> HttpRespo
         }
         return render(req, "campaigns/notes/convert.html", context)
     # else it's POST, and it's a convert note request
-    return note_convert(req, campaign_opt, note_opt, conversion_types)
+    return note_convert(req, campaign_opt, note_opt)

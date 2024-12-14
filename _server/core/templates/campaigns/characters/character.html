@@ -23,6 +23,7 @@
     </div>
     <p>{% if current_character.clazz %} Level {{current_character.level}} {% endif %}{{current_character.race}}{% if current_character.clazz %} {{current_character.clazz}}{% endif %}</p>
     <div class="info-card">
+        <h3>Description</h3>
         <p>{{current_character.description}}</p>
     </div>
     {% if current_character.hostility %}

@@ -153,11 +153,11 @@ def character_form(req: HttpRequest, campaign: Campaign, character: Character | 
     if not name:
         return HttpResponseBadRequest("Missing character name")
     race = req.POST.get("race")
-    race = race if race else Character.race.default
+    race = race if race else Character._meta.get_field('race').default
     clazz = req.POST.get("clazz")
     level = req.POST.get("level")
     try:
-        level = int(level) if level else Character.level.default
+        level = int(level) if level else Character._meta.get_field('level').default
     except ValueError:
         return HttpResponseBadRequest("Invalid level: must be an integer")
     description = req.POST.get("description")
@@ -166,7 +166,7 @@ def character_form(req: HttpRequest, campaign: Campaign, character: Character | 
     location_opt = None
     if location_id:
         try:
-            location_id = int(req.POST.get("location"))
+            location_id = int(location_id)
         except ValueError:
             return HttpResponseBadRequest("Invalid location")
         location_opt = get_campaign_field_opt(Location, location_id, campaign)
@@ -458,28 +458,32 @@ def note_convert(req: HttpRequest, campaign: Campaign, note: Note) -> HttpRespon
         name = note.title
         neighboring_locations = note.locations.all()
         description = note.content
-        hostility = note.hostility if note.hostility else Location.hostility.default
-        location = Location(campaign=note.campaign, name=name,
-                            neighboring_locations=neighboring_locations, description=description,
+        hostility = note.hostility if note.hostility \
+                                   else Location._meta.get_field('hostility').default
+        location = Location(campaign=note.campaign, name=name, description=description,
                             hostility=hostility)
+        location.save()
+        location.neighboring_locations.set(neighboring_locations)
         location.save()
         rval = redirect(f"/campaigns/{campaign.id}/locations/{location.id}/")
     elif conversion_type == "Organization":
         name = note.title
         location = note.locations.first()
-        hostility = note.hostility if note.hostility else Organization.hostility.default
+        hostility = note.hostility if note.hostility \
+                                   else Organization._meta.get_field('hostility').default
         related_organizations = note.organizations.all()
         description = note.content
         organization = Organization(campaign=note.campaign, name=name, location=location,
-                                    related_organizations=related_organizations,
                                     description=description, hostility=hostility)
+        organization.save()
+        organization.related_organizations.set(related_organizations)
         organization.save()
         rval = redirect(f"/campaigns/{campaign.id}/organizations/{organization.id}/")
     elif conversion_type == "Character":
         name = note.title
-        race = note.race if note.race else Character.race.default
+        race = note.race if note.race else Character._meta.get_field('race').default
         clazz = note.clazz
-        level = note.level if note.level else Character.level.default
+        level = note.level if note.level else Character._meta.get_field('level').default
         from_location = note.locations.first()
         organizations = note.organizations.all()
         related_characters = note.characters.all()
@@ -499,16 +503,19 @@ def note_convert(req: HttpRequest, campaign: Campaign, note: Note) -> HttpRespon
                     return pc_opt
             character = PlayerCharacter(campaign=campaign, name=name, race=race, clazz=clazz,
                                         level=level, from_location=from_location,
-                                        organizations=organizations,
-                                        related_characters=related_characters,
                                         description=description, player=pc_opt)
+            character.save()
+            character.organizations.set(organizations)
+            character.related_characters.set(related_characters)
         else:  # NPC
-            hostility = note.hostility if note.hostility else NonPlayerCharacter.hostility.default
+            hostility = note.hostility if note.hostility \
+                                       else NonPlayerCharacter._meta.get_field('hostility').default
             character = NonPlayerCharacter(campaign=campaign, name=name, race=race, clazz=clazz,
                                            level=level, from_location=from_location,
-                                           organizations=organizations,
-                                           related_characters=related_characters,
                                            description=description, hostility=hostility)
+            character.save()
+            character.organizations.set(organizations)
+            character.related_characters.set(related_characters)
         character.save()
         rval = redirect(f"/campaigns/{campaign.id}/characters/{character.id}/")
     elif conversion_type == "Event":
@@ -521,8 +528,10 @@ def note_convert(req: HttpRequest, campaign: Campaign, note: Note) -> HttpRespon
         involved_characters = note.characters.all()
         description = note.content
         event = Event(campaign=campaign, title=title, start_time=start_time, end_time=end_time,
-                      location=location, involved_organizations=involved_organizations,
-                      involved_characters=involved_characters, description=description)
+                      location=location, description=description)
+        event.save()
+        event.involved_organizations.set(involved_organizations)
+        event.involved_characters.set(involved_characters)
         event.save()
         rval = redirect(f"/campaigns/{campaign.id}/events/{event.id}/")
     # Wait til the very end to delete the note, in case of some error occurring

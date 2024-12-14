@@ -49,6 +49,7 @@
         <label>
             Hostility
             <select name="hostility" id="note-hostility">
+                <option value=""></option>
                 <option value="F" {% if current_note.hostility == 'F' %}selected{% endif %}>Friendly</option>
                 <option value="N" {% if current_note.hostility == 'N' %}selected{% endif %}>Neutral</option>
                 <option value="H" {% if current_note.hostility == 'H' %}selected{% endif %}>Hostile</option>

@@ -18,10 +18,11 @@
     <h1>{{current_campaign.name}}</h1>
     <em>{% if current_campaign.is_public %}Public{% else %}Private{% endif %} Campaign</em>
     <div id="campaign-actions" class="note-actions">
-        <a class="delete-button" href="/campaigns/{{current_campaign.id}}/delete/">Delete</a>
-        <a class="edit-button" href="/campaigns/{{current_campaign.id}}/edit/">Edit</a>
+        <a class="delete-button" href="delete/">Delete</a>
+        <a class="edit-button" href="edit/">Edit</a>
     </div>
     <p>{{current_campaign.description}}</p>
+    <a class="new-button" href="notes/new/">New QuickNote</a>
 
     <script>
         const csrftoken = '{{ csrf_token }}';
